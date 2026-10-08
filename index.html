@@ -2,149 +2,93 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>LF03 Online Duell</title>
- 
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LF03 Online-Duell</title>
 <style>
-body{
-font-family:Arial, sans-serif;
-background:#1f2937;
-color:white;
-text-align:center;
-padding:40px;
-}
- 
-.card{
-max-width:600px;
-margin:auto;
-background:#374151;
-padding:20px;
-border-radius:15px;
-}
- 
-input{
-padding:10px;
-width:250px;
-margin:10px;
-}
- 
-button{
-padding:10px 20px;
-cursor:pointer;
-}
- 
-#players{
-margin-top:20px;
-}
+:root{--green:#25d48a;--purple:#8b5cf6;--pink:#ec4899;--bg:#07111f;--card:#111f34;--text:#eef6ff;--muted:#9fb0c5;--red:#ef4444;--gold:#fbbf24}*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Segoe UI,Arial,sans-serif;background:radial-gradient(circle at top,#1b3156,var(--bg) 58%);color:var(--text)}.app{max-width:980px;margin:auto;padding:18px}.hero{text-align:center;padding:16px}.hero h1{margin:.15em;font-size:clamp(2rem,6vw,4rem);background:linear-gradient(90deg,var(--green),var(--purple),var(--pink));-webkit-background-clip:text;color:transparent}.sub,.small{color:var(--muted)}.panel{background:#111f34f2;border:1px solid #304968;border-radius:24px;padding:24px;box-shadow:0 24px 60px #0007}.hidden{display:none!important}.input{width:100%;padding:14px;border:1px solid #43617f;border-radius:12px;background:#081524;color:white;font-size:1rem}.btn{border:0;border-radius:13px;padding:13px 19px;font-weight:900;cursor:pointer;margin-top:10px}.primary{background:linear-gradient(90deg,var(--green),var(--purple));color:#04101b}.secondary{background:#29415e;color:white}.danger{background:#7f1d1d;color:white}.status{margin-top:14px;padding:13px;border-radius:12px;background:#0a1728}.code{font-size:2rem;letter-spacing:.18em;color:#6ee7b7;font-weight:900}.players{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}.player{background:#0a1728;border:2px solid #2d4664;border-radius:15px;padding:13px}.player.me{border-color:var(--purple)}.player.done{border-color:var(--green)}.score{font-size:1.35rem;font-weight:900}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.topic{display:inline-block;background:var(--green);color:#06111d;padding:6px 10px;border-radius:99px;font-weight:900}.progress{height:10px;background:#263d58;border-radius:99px;overflow:hidden;margin:15px 0}.bar{height:100%;background:linear-gradient(90deg,var(--green),var(--pink));transition:.3s}.question{font-size:1.38rem;line-height:1.4;margin:20px 0}.options{display:grid;gap:11px}.option{padding:15px;text-align:left;border:1px solid #405b7b;border-radius:14px;background:#172a43;color:white;font-size:1rem;cursor:pointer}.option:hover{border-color:var(--purple);transform:translateY(-1px)}.option.selected{border-color:var(--gold)}.option.correct{background:#123d31;border-color:var(--green)}.option.wrong{background:#4b1c28;border-color:var(--red)}.option:disabled{cursor:default}.resultbox{margin-top:16px;padding:15px;border-radius:14px;background:#0a1728}.roundrow,.rank{padding:12px;margin:8px 0;border-radius:12px;background:#14253b}.winner{border:1px solid var(--gold)}.center{text-align:center}.loading{opacity:.7;pointer-events:none}@media(max-width:700px){.players{grid-template-columns:1fr}.panel{padding:17px}.app{padding:10px}}
 </style>
 </head>
- 
-<body>
- 
-<div class="card">
- 
-<h1>🎮 LF03 Online Duell</h1>
- 
-<p>Raumcode: <b>123456</b></p>
- 
-<input id="playerName" placeholder="Dein Name">
- 
-<br>
- 
-<button onclick="joinRoom()">
-Beitreten
-</button>
- 
-<div id="status"></div>
- 
-<div id="players"></div>
- 
-</div>
- 
+<body><main class="app">
+<header class="hero"><h1>🎮 LF03 ONLINE-DUELL</h1><p class="sub">3 Spieler · Raum 123456 · 20 Zufallsfragen · 150 Fragen im Pool</p></header>
+<section id="joinView" class="panel"><h2>Lobby beitreten</h2><p>Fester Raumcode: <span class="code">123456</span></p><input id="nameInput" class="input" maxlength="18" placeholder="Dein Spielername"><button id="joinBtn" class="btn primary">Beitreten</button><div id="joinStatus" class="status">Noch nicht verbunden.</div></section>
+<section id="lobbyView" class="panel hidden"><div class="top"><div><h2>Warteraum</h2><div class="small">Raum 123456 · maximal 3 Spieler</div></div><button id="leaveBtn" class="btn secondary">Lobby verlassen</button></div><div id="lobbyPlayers" class="players"></div><div id="lobbyStatus" class="status"></div><button id="startBtn" class="btn primary hidden">Spiel starten</button><button id="resetBtn" class="btn danger hidden">Altes Spiel zurücksetzen</button></section>
+<section id="gameView" class="panel hidden"><div class="top"><div><span id="topic" class="topic"></span><div id="counter" class="small"></div></div><div id="waiting" class="small"></div></div><div id="gamePlayers" class="players"></div><div class="progress"><div id="bar" class="bar"></div></div><div id="question" class="question"></div><div id="options" class="options"></div><div id="answerStatus" class="status"></div><div id="roundResult" class="resultbox hidden"></div><button id="nextBtn" class="btn primary hidden">Nächste Frage</button></section>
+<section id="finalView" class="panel center hidden"><h2>🏆 Endergebnis</h2><div id="ranking"></div><p class="small">Nur der Host kann eine neue Runde vorbereiten.</p><button id="newGameBtn" class="btn primary hidden">Neue Lobby</button></section>
+</main>
 <script type="module">
- 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
- 
-import {
-getDatabase,
-ref,
-set,
-onValue
-}
-from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
- 
-const firebaseConfig = {
- 
-apiKey: "DEIN_API_KEY",
-authDomain: "lf03-duell.firebaseapp.com",
-databaseURL:
-"https://lf03-duell-default-rtdb.europe-west1.firebasedatabase.app",
- 
-projectId: "lf03-duell",
- 
-storageBucket:
-"lf03-duell.firebasestorage.app",
- 
-messagingSenderId: "687106370304",
- 
-appId:
-"1:687106370304:web:93824e72957d5371ede1e5"
- 
-};
- 
-const app = initializeApp(firebaseConfig);
- 
-const db = getDatabase(app);
- 
-window.joinRoom = function(){
- 
-let name =
-document.getElementById("playerName").value;
- 
-if(!name){
-alert("Bitte Namen eingeben");
-return;
-}
- 
-set(
-ref(db,"123456/"+name),
-{
-joined:true
-}
-);
- 
-document.getElementById("status")
-.innerHTML =
-"✅ Verbunden als "+name;
- 
-}
- 
-onValue(
-ref(db,"123456"),
-(snapshot)=>{
- 
-let data = snapshot.val();
- 
-let html =
-"<h3>Spieler:</h3>";
- 
-if(data){
- 
-for(let p in data){
- 
-html += p+"<br>";
- 
-}
- 
-}
- 
-document.getElementById("players")
-.innerHTML = html;
- 
-}
-);
- 
-</script>
- 
-</body>
-</html>
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+import {getDatabase,ref,get,set,update,onValue,runTransaction,serverTimestamp,onDisconnect,remove} from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+
+const firebaseConfig={apiKey:"AIzaSyAyI4cbSH0yybp62M1e4vlvMTx3zJcN7eY",authDomain:"lf03-duell.firebaseapp.com",databaseURL:"https://lf03-duell-default-rtdb.europe-west1.firebasedatabase.app",projectId:"lf03-duell",storageBucket:"lf03-duell.firebasestorage.app",messagingSenderId:"687106370304",appId:"1:687106370304:web:93824e72957d5371ede1e5",measurementId:"G-VCH4PTXXYY"};
+const app=initializeApp(firebaseConfig),db=getDatabase(app),ROOM="123456",roomRef=ref(db,`rooms/${ROOM}`);
+const concepts=[
+["OSI-Modell","Ein Referenzmodell mit sieben Schichten",["Ein Kabelstandard","Ein IP-Vergabeverfahren","Ein RAID-Level"],"Das OSI-Modell strukturiert Kommunikation in sieben Schichten.","OSI & Grundlagen"],
+["Physical Layer","Überträgt Bits als elektrische, optische oder Funksignale",["Routet IP-Pakete","Vergibt DNS-Namen","Verwaltet Sitzungen"],"Schicht 1 beschreibt Medium, Signal und Bitübertragung.","OSI & Grundlagen"],
+["Data Link Layer","Verarbeitet Frames und MAC-Adressen",["Routet zwischen Netzen","Komprimiert Dateien","Vergibt IP-Adressen"],"Schicht 2 arbeitet mit Frames und lokaler MAC-Kommunikation.","OSI & Grundlagen"],
+["Network Layer","Übernimmt logische Adressierung und Routing",["Überträgt einzelne Bits","Verwaltet Dateiformate","Versorgt Geräte per PoE"],"Schicht 3 verarbeitet IP-Pakete und Routing.","OSI & Grundlagen"],
+["Transport Layer","Stellt Ende-zu-Ende-Transport mit TCP oder UDP bereit",["Verbindet Gebäude","Vergibt VLAN-IDs","Speichert MAC-Adressen"],"Schicht 4 nutzt unter anderem TCP, UDP und Ports.","OSI & Grundlagen"],
+["Switch","Arbeitet typischerweise auf OSI-Schicht 2",["Arbeitet nur auf Schicht 7","Ersetzt immer Router","Vergibt öffentliche IP-Adressen"],"Ein klassischer Switch leitet Frames anhand von MAC-Adressen weiter.","OSI & Grundlagen"],
+["Router","Verbindet unterschiedliche IP-Netze auf Schicht 3",["Verstärkt nur WLAN","Spiegelt Festplatten","Ersetzt DNS"],"Router treffen Weiterleitungsentscheidungen anhand von IP-Netzen.","OSI & Grundlagen"],
+["Stern-Topologie","Alle Endgeräte sind mit einem zentralen Gerät verbunden",["Jedes Gerät hat zwei Nachbarn","Alle teilen ein Buskabel","Jeder ist mit jedem verbunden"],"Bei der Stern-Topologie bildet meist ein Switch das Zentrum.","Topologien & Verkabelung"],
+["Complete-Mesh","Jeder Knoten ist direkt mit jedem anderen verbunden",["Alle hängen an einem Switch","Es gibt nur ein Buskabel","Nur zwei Geräte kommunizieren"],"Complete-Mesh bietet viele Wege, benötigt aber viele Verbindungen.","Topologien & Verkabelung"],
+["Primärverkabelung","Verbindet Gebäude innerhalb eines Standorts",["Verbindet Etagen mit Dosen","Verbindet Räume","Verbindet nur PCs"],"Primärverkabelung ist die Standort- oder Campusverkabelung.","Topologien & Verkabelung"],
+["Sekundärverkabelung","Verbindet Gebäude- und Etagenverteiler",["Verbindet Endgeräte per WLAN","Verbindet Programme","Verbindet nur Städte"],"Sekundärverkabelung bildet den Gebäudebackbone.","Topologien & Verkabelung"],
+["Tertiärverkabelung","Verläuft auf der Etage bis zu den Anschlussdosen",["Verbindet Städte","Ist nur Glasfaser","Ersetzt DHCP"],"Tertiärverkabelung ist die Etagenverkabelung.","Topologien & Verkabelung"],
+["Vollduplex","Senden und Empfangen sind gleichzeitig möglich",["Nur eine Richtung","Richtungen wechseln","Kollisionen sind erforderlich"],"Vollduplex erlaubt gleichzeitiges Senden und Empfangen.","Ethernet & Übertragung"],
+["CSMA/CD","Erkennt Kollisionen im klassischen geteilten Ethernet",["Verschlüsselt WLAN","Vergibt IP-Adressen","Berechnet RAID-Parität"],"CSMA/CD gehört zu älterem gemeinsam genutztem Halbduplex-Ethernet.","Ethernet & Übertragung"],
+["MAC-Adresse","Ist typischerweise 48 Bit lang",["Ist 32 Bit lang","Ist 128 Bit lang","Ist eine Portnummer"],"Eine klassische Ethernet-MAC-Adresse umfasst 48 Bit.","Ethernet & Übertragung"],
+["Ethernet-Präambel","Dient der Synchronisation vor einem Frame",["Enthält die DNS-IP","Verschlüsselt Nutzdaten","Bestimmt VLAN-Anzahl"],"Die Präambel hilft bei der Taktsynchronisation.","Ethernet & Übertragung"],
+["FCS/Prüfsumme","Dient der Fehlererkennung im Ethernet-Frame",["Vergibt MAC-Adressen","Erhöht Bandbreite","Bestimmt Gateway"],"Die Frame Check Sequence erkennt Übertragungsfehler.","Ethernet & Übertragung"],
+["IPv4","Verwendet 32-Bit-Adressen",["Verwendet 48 Bit","Verwendet 256 Bit","Hat keinen Netzanteil"],"IPv4-Adressen bestehen aus 32 Bit.","IP & Routing"],
+["IPv6","Verwendet 128-Bit-Adressen",["Verwendet 16 Bit","Benötigt immer NAT","Hat vier Dezimaloktette"],"IPv6-Adressen sind 128 Bit lang.","IP & Routing"],
+["Subnetzmaske","Trennt Netz- und Hostanteil einer IPv4-Adresse",["Verschlüsselt Passwörter","Speichert DNS-Namen","Misst WLAN-Stärke"],"Die Subnetzmaske legt fest, welche Bits zum Netz gehören.","IP & Routing"],
+["Standardgateway","Leitet Pakete in andere IP-Netze weiter",["Vergibt MAC-Adressen","Ist die Broadcastadresse","Speichert Backups"],"Für Ziele außerhalb des lokalen Netzes sendet der Client an das Gateway.","IP & Routing"],
+["TTL","Begrenzt die Lebensdauer eines IP-Pakets in Hops",["Legt Ports fest","Verschlüsselt Frames","Verdoppelt Bandbreite"],"Jeder Router reduziert die TTL und begrenzt so Routingschleifen.","IP & Routing"],
+["ARP","Löst im lokalen IPv4-Netz IP-Adressen in MAC-Adressen auf",["Löst Domainnamen auf","Vergibt IP-Adressen","Komprimiert Pakete"],"ARP ermittelt zur IPv4-Adresse die passende MAC-Adresse.","IP & Routing"],
+["Unicast","Sendet von einem Absender an einen bestimmten Empfänger",["Sendet an alle","Sendet nur an Router","Sendet an eine Gruppe"],"Unicast ist Eins-zu-eins-Kommunikation.","IP & Routing"],
+["Broadcast","Sendet an alle Teilnehmer einer Broadcast-Domäne",["Sendet an einen Empfänger","Sendet an eine Gruppe","Funktioniert nur im Internet"],"Ein Broadcast richtet sich an alle Geräte der lokalen Broadcast-Domäne.","IP & Routing"],
+["NAT","Übersetzt IP-Adressen zwischen Netzen",["Ordnet Namen IPs zu","Erkennt Kabelbrüche","Spiegelt Festplatten"],"NAT wird häufig zwischen privaten und öffentlichen Netzen eingesetzt.","IP & Routing"],
+["PAT","Unterscheidet Verbindungen zusätzlich über Portnummern",["Arbeitet ohne Ports","Ist RAID","Ist ein WLAN-Kanal"],"PAT ermöglicht vielen Clients die Nutzung einer öffentlichen Adresse.","IP & Routing"],
+["DHCP","Vergibt automatisch Netzwerkkonfigurationen",["Übersetzt Domainnamen","Verschlüsselt Dateien","Prüft Festplatten"],"DHCP kann IP, Maske, Gateway und DNS bereitstellen.","Dienste & Diagnose"],
+["DORA","Steht für Discover, Offer, Request, Acknowledge",["Data, Output, Routing, Address","DNS-Reihenfolge","RAID-Wiederaufbau"],"DORA beschreibt den typischen DHCP-Ablauf.","Dienste & Diagnose"],
+["APIPA","Liegt typischerweise im Bereich 169.254.0.0/16",["Ist immer öffentlich","Beginnt mit 10.","Ist IPv6-Multicast"],"APIPA wird meist vergeben, wenn kein DHCP erreichbar ist.","Dienste & Diagnose"],
+["DNS","Löst Namen in IP-Adressen auf",["Teilt Festplatten in Stripes","Versorgt Access Points","Stoppt Broadcasts"],"DNS steht für Domain Name System und übernimmt Namensauflösung.","Dienste & Diagnose"],
+["ipconfig /all","Zeigt detaillierte IP-Konfiguration unter Windows",["Löscht Routingtabellen","Erstellt Backups","Startet DNS"],"Der Befehl zeigt IP, Maske, Gateway, DNS und DHCP-Status.","Dienste & Diagnose"],
+["TCP","Ist verbindungsorientiert und bestätigt Daten",["Ist grundsätzlich unzuverlässig","Besitzt keine Ports","Arbeitet nur auf Schicht 2"],"TCP bietet zuverlässige, geordnete Übertragung.","Dienste & Diagnose"],
+["UDP","Ist verbindungslos und hat wenig Overhead",["Bestätigt immer","Garantiert jede Zustellung","Ersetzt IP"],"UDP ist schnell und schlank, garantiert aber keine Zustellung.","Dienste & Diagnose"],
+["VLAN","Bildet logische Broadcast-Domänen auf Switches",["Erhöht Internettempo","Ersetzt jede Firewall","Spiegelt Festplatten"],"VLANs segmentieren ein physisches Switch-Netz logisch.","VLAN, WLAN & PoE"],
+["802.1Q","Kennzeichnet VLAN-Zugehörigkeit in Ethernet-Frames",["Ist WLAN-Passwortstandard","Ist RAID","Ist DNS-Record"],"IEEE 802.1Q definiert VLAN-Tags auf Trunks.","VLAN, WLAN & PoE"],
+["Access-Port","Transportiert normalerweise genau ein VLAN ungetaggt",["Transportiert alle VLANs getaggt","Ist nur für Router","Überträgt keine Frames"],"Ein Access-Port verbindet meist ein Endgerät mit einem VLAN.","VLAN, WLAN & PoE"],
+["Trunk-Port","Transportiert mehrere VLANs zwischen Netzwerkgeräten",["Darf nur ein VLAN führen","Ist eine USV-Verbindung","Vergibt IP-Adressen"],"Trunks tragen mehrere VLANs, meist mit 802.1Q-Tags.","VLAN, WLAN & PoE"],
+["PoE","Überträgt Daten und elektrische Leistung über Ethernetkabel",["Ist Verschlüsselung","Ist Backup","Ersetzt MAC"],"PoE versorgt etwa Access Points oder IP-Telefone über das Netzwerkkabel.","VLAN, WLAN & PoE"],
+["WPA3","Ist ein moderner WLAN-Sicherheitsstandard",["Ist ein Kabeltyp","Ist unverschlüsselt","Ist ein Routingprotokoll"],"WPA3 verbessert den Schutz drahtloser Netze.","VLAN, WLAN & PoE"],
+["VPN Site-to-Site","Verbindet zwei Standorte über einen geschützten Tunnel",["Verbindet Tastatur und PC","Spiegelt Platten","Vergibt VLAN-IDs"],"Site-to-Site-VPN koppelt Netze verschiedener Standorte.","Security & Cloud"],
+["Firewall","Filtert Netzwerkverkehr nach Regeln",["Speichert Backups","Ersetzt jeden Switch","Erhöht CPU-Takt"],"Eine Firewall erlaubt oder blockiert Verbindungen anhand von Regeln.","Security & Cloud"],
+["SaaS","Der Provider stellt eine fertige Anwendung bereit",["Kunde verwaltet Hardware","Nur Strom wird geliefert","Ist eine USV-Klasse"],"Bei SaaS nutzt der Kunde fertige Software als Dienst.","Security & Cloud"],
+["IaaS","Der Provider stellt virtuelle Infrastruktur bereit",["Nur Textverarbeitung","Nur Papierdokumente","Ist WLAN-Authentifizierung"],"IaaS stellt Rechenleistung, Speicher und Netzwerk bereit.","Security & Cloud"],
+["RAID 0","Verteilt Daten ohne Redundanz auf mehrere Laufwerke",["Spiegelt Daten","Speichert doppelte Parität","Ist externes Backup"],"RAID 0 ist schnell, schützt aber nicht vor Laufwerksausfall.","RAID & Backup"],
+["RAID 1","Spiegelt Daten auf mindestens zwei Laufwerke",["Hat keine Redundanz","Verwendet drei Paritäten","Ersetzt Backup"],"RAID 1 erhöht Verfügbarkeit durch Spiegelung.","RAID & Backup"],
+["RAID 5","Verteilt Daten und Parität über mindestens drei Laufwerke",["Hat keine Redundanz","Ist RAID 0","Benötigt nur ein Laufwerk"],"RAID 5 verkraftet typischerweise den Ausfall eines Laufwerks.","RAID & Backup"],
+["Inkrementelles Backup","Sichert Änderungen seit dem letzten Backup",["Sichert immer alles","Sichert nur seit Vollbackup","Ist RAID"],"Zur Wiederherstellung braucht man Vollbackup und alle Inkremente.","RAID & Backup"],
+["Online-USV / VFI","Versorgt die Last dauerhaft ohne Umschaltzeit",["Schützt nur bei Netzausfall","Gleicht nur kleine Schwankungen aus","Ist Load-Balancing"],"VFI bietet den höchsten Schutz und keine Umschaltzeit.","Verfügbarkeit"],
+["Load Balancer","Verteilt Anfragen auf mehrere Backend-Systeme",["Vergibt MAC-Adressen","Erstellt Offline-Backups","Misst Raumtemperatur"],"Load Balancing unterstützt Skalierung und Ausfallsicherheit.","Verfügbarkeit"]
+];
+function shuffle(a){const b=[...a];for(let i=b.length-1;i;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+const BANK=[];let id=1;const stems=[t=>`Welche Aussage zu „${t}“ ist richtig?`,t=>`Was beschreibt „${t}“ am besten?`,t=>`Welche Zuordnung zu „${t}“ stimmt?`];for(const [term,correct,wrong,explanation,topic] of concepts){for(const stem of stems){const options=shuffle([correct,...wrong]);BANK.push({id:id++,q:stem(term),options,answer:options.indexOf(correct),explanation,topic})}}
+
+let myId=localStorage.getItem("lf03PlayerId")||crypto.randomUUID();localStorage.setItem("lf03PlayerId",myId);let myName="",room=null,lastStatus="",scoring=false;
+const $=x=>document.getElementById(x),views=["joinView","lobbyView","gameView","finalView"];function show(id){views.forEach(v=>$(v).classList.toggle("hidden",v!==id))}function esc(s){return String(s??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]))}
+$("nameInput").value=localStorage.getItem("lf03Name")||"";
+$("joinBtn").onclick=joinRoom;$("leaveBtn").onclick=leaveRoom;$("startBtn").onclick=startGame;$("nextBtn").onclick=nextQuestion;$("newGameBtn").onclick=resetLobby;$("resetBtn").onclick=resetLobby;
+async function joinRoom(){myName=$("nameInput").value.trim().slice(0,18);if(!myName){alert("Bitte Namen eingeben.");return}$("joinBtn").disabled=true;try{const result=await runTransaction(roomRef,current=>{current=current&&typeof current==="object"?current:{};current.players=current.players||{};if(!current.players[myId]&&Object.keys(current.players).length>=3)return;const isFirst=Object.keys(current.players).length===0;current.players[myId]={name:myName,score:current.players[myId]?.score||0,online:true,joinedAt:Date.now(),host:current.players[myId]?.host||isFirst};current.status=current.status||"lobby";return current});if(!result.committed){throw new Error("Der Raum ist voll. Maximal 3 Spieler.")}localStorage.setItem("lf03Name",myName);await onDisconnect(ref(db,`rooms/${ROOM}/players/${myId}/online`)).set(false);show("lobbyView")}catch(e){$("joinStatus").textContent="❌ "+e.message;$("joinBtn").disabled=false}}
+async function leaveRoom(){await remove(ref(db,`rooms/${ROOM}/players/${myId}`));localStorage.removeItem("lf03PlayerId");location.reload()}
+async function startGame(){if(!room||!room.players?.[myId]?.host)return;const ps=Object.keys(room.players||{});if(ps.length!==3){alert("Es müssen genau 3 Spieler verbunden sein.");return}const selected=shuffle(BANK).slice(0,20).map(q=>q.id);const playerReset={};for(const pid of ps)playerReset[pid]={...room.players[pid],score:0,online:true};await update(roomRef,{status:"playing",questionIds:selected,currentIndex:0,answers:null,roundResult:null,players:playerReset,roundScored:false,startedAt:serverTimestamp()})}
+async function submitAnswer(choice){if(!room||room.status!=="playing"||room.answers?.[myId])return;const qid=room.questionIds[room.currentIndex];await set(ref(db,`rooms/${ROOM}/answers/${myId}`),{choice,questionId:qid,answeredAt:serverTimestamp()})}
+async function scoreRound(){if(scoring||!room||!room.players?.[myId]?.host||room.roundScored)return;const pids=Object.keys(room.players||{}),answers=room.answers||{};if(pids.some(id=>!answers[id]))return;scoring=true;try{await runTransaction(roomRef,state=>{if(!state||state.roundScored)return state;const ids=Object.keys(state.players||{});if(ids.some(id=>!state.answers?.[id]))return state;const q=BANK.find(x=>x.id===state.questionIds[state.currentIndex]);const correct=ids.filter(pid=>state.answers[pid].choice===q.answer).sort((a,b)=>(state.answers[a].answeredAt||9e15)-(state.answers[b].answeredAt||9e15));const awards=[12,10,7],result={};ids.forEach(pid=>result[pid]={correct:false,points:0,place:null});correct.forEach((pid,i)=>{result[pid]={correct:true,points:awards[i]||7,place:i+1};state.players[pid].score=(state.players[pid].score||0)+(awards[i]||7)});state.roundResult=result;state.roundScored=true;return state})}finally{scoring=false}}
+async function nextQuestion(){if(!room?.players?.[myId]?.host||!room.roundScored)return;if(room.currentIndex>=19){await update(roomRef,{status:"finished",finishedAt:serverTimestamp()});return}await update(roomRef,{currentIndex:room.currentIndex+1,answers:null,roundResult:null,roundScored:false})}
+async function resetLobby(){if(!room?.players?.[myId]?.host)return;const reset={};for(const [pid,p] of Object.entries(room.players||{}))reset[pid]={...p,score:0};await update(roomRef,{status:"lobby",questionIds:null,currentIndex:0,answers:null,roundResult:null,roundScored:false,players:reset})}
+function playersHtml(showAnswer=false){return Object.entries(room?.players||{}).map(([pid,p])=>`<div class="player ${pid===myId?'me':''} ${showAnswer&&room.answers?.[pid]?'done':''}"><b>${esc(p.name)} ${p.host?'👑':''}</b><div class="score">${p.score||0} Punkte</div><div class="small">${p.online===false?'offline':showAnswer?(room.answers?.[pid]?'Antwort abgegeben':'überlegt …'):'verbunden'}</div></div>`).join("")}
+function render(){if(!room)return;const me=room.players?.[myId];if(!me){show("joinView");$("joinBtn").disabled=false;return}myName=me.name;if(room.status==="lobby"){show("lobbyView");$("lobbyPlayers").innerHTML=playersHtml();const count=Object.keys(room.players||{}).length;$("lobbyStatus").textContent=`${count} von 3 Spielern verbunden. ${count===3?'Bereit zum Start!':'Warte auf weitere Spieler …'}`;$("startBtn").classList.toggle("hidden",!me.host||count!==3);$("resetBtn").classList.toggle("hidden",!me.host)}else if(room.status==="playing"){show("gameView");renderGame();if(me.host)scoreRound()}else if(room.status==="finished"){show("finalView");const sorted=Object.values(room.players||{}).sort((a,b)=>(b.score||0)-(a.score||0));const medals=["🥇","🥈","🥉"];$("ranking").innerHTML=sorted.map((p,i)=>`<div class="rank ${i===0?'winner':''}">${medals[i]} <b>${esc(p.name)}</b> · ${p.score||0} Punkte</div>`).join("");$("newGameBtn").classList.toggle("hidden",!me.host)}}
+function renderGame(){const qid=room.questionIds?.[room.currentIndex],q=BANK.find(x=>x.id===qid);if(!q)return;$("topic").textContent=q.topic;$("counter").textContent=`Frage ${room.currentIndex+1} von 20`;$("bar").style.width=`${(room.currentIndex+1)/20*100}%`;$("question").textContent=q.q;$("gamePlayers").innerHTML=playersHtml(true);const mine=room.answers?.[myId],result=room.roundResult;$("options").innerHTML=q.options.map((o,i)=>`<button class="option ${mine?.choice===i?'selected':''} ${result?(i===q.answer?'correct':mine?.choice===i?'wrong':''):''}" ${mine||result?'disabled':''} data-i="${i}">${String.fromCharCode(65+i)}. ${esc(o)}</button>`).join("");$("options").querySelectorAll("button").forEach(b=>b.onclick=()=>submitAnswer(Number(b.dataset.i)));const have=Object.keys(room.answers||{}).length,total=Object.keys(room.players||{}).length;$("waiting").textContent=`${have}/${total} Antworten`;$("answerStatus").textContent=mine?"✅ Antwort gespeichert. Warte auf die anderen …":"Wähle jetzt deine Antwort.";if(result){const rows=Object.entries(result).sort((a,b)=>(a[1].place||99)-(b[1].place||99));$("roundResult").innerHTML=`<b>Richtige Antwort: ${String.fromCharCode(65+q.answer)}. ${esc(q.options[q.answer])}</b><br><span class="small">${esc(q.explanation)}</span>`+rows.map(([pid,r])=>`<div class="roundrow">${r.correct?(r.place===1?'🥇':r.place===2?'🥈':'🥉'):'❌'} ${esc(room.players[pid].name)}: +${r.points} Punkte</div>`).join("");$("roundResult").classList.remove("hidden")}else $("roundResult").classList.add("hidden");$("nextBtn").classList.toggle("hidden",!room.players[myId].host||!room.roundScored);$("nextBtn").textContent=room.currentIndex>=19?"Ergebnis anzeigen":"Nächste Frage"}
+onValue(roomRef,s=>{room=s.val();render()});
+</script></body></html>
