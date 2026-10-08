@@ -73,8 +73,158 @@ const concepts=[
 ["Online-USV / VFI","Versorgt die Last dauerhaft ohne Umschaltzeit",["Schützt nur bei Netzausfall","Gleicht nur kleine Schwankungen aus","Ist Load-Balancing"],"VFI bietet den höchsten Schutz und keine Umschaltzeit.","Verfügbarkeit"],
 ["Load Balancer","Verteilt Anfragen auf mehrere Backend-Systeme",["Vergibt MAC-Adressen","Erstellt Offline-Backups","Misst Raumtemperatur"],"Load Balancing unterstützt Skalierung und Ausfallsicherheit.","Verfügbarkeit"]
 ];
-function shuffle(a){const b=[...a];for(let i=b.length-1;i;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
-const BANK=[];let id=1;const stems=[t=>`Welche Aussage zu „${t}“ ist richtig?`,t=>`Was beschreibt „${t}“ am besten?`,t=>`Welche Zuordnung zu „${t}“ stimmt?`];for(const [term,correct,wrong,explanation,topic] of concepts){for(const stem of stems){const options=shuffle([correct,...wrong]);BANK.push({id:id++,q:stem(term),options,answer:options.indexOf(correct),explanation,topic})}}
+function shuffle(a){
+2
+const b=[...a];
+3
+ 
+4
+for(let i=b.length-1;i;i--){
+5
+const j=Math.floor(Math.random()*(i+1));
+6
+[b[i],b[j]]=[b[j],b[i]];
+7
+}
+8
+ 
+9
+return b;
+10
+}
+11
+ 
+12
+/*
+13
+Feste Antwortreihenfolgen:
+14
+ 
+15
+Jede Frage erhält anhand ihrer festen Nummer eine bestimmte
+16
+Reihenfolge. Dadurch sehen alle Geräte dieselben Antworten
+17
+an denselben Positionen A, B, C und D.
+18
+ 
+19
+Math.random() wird hier absichtlich NICHT verwendet.
+20
+*/
+21
+const ANSWER_ORDERS = [
+22
+[0,1,2,3],
+23
+[1,3,0,2],
+24
+[2,0,3,1],
+25
+[3,2,1,0],
+26
+[0,2,1,3],
+27
+[1,0,3,2],
+28
+[2,3,0,1],
+29
+[3,1,2,0]
+30
+];
+const BANK=[];let id=1;const stems= term => `Welche Aussage zu „${term}“ ist richtig?`,
+37
+term => `Was beschreibt „${term}“ am besten?`,
+38
+term => `Welche Zuordnung zu „${term}“ stimmt?`
+39
+];
+40
+ 
+41
+for(const [
+42
+conceptIndex,
+43
+[term, correct, wrong, explanation, topic]
+44
+] of concepts.entries()){
+45
+ 
+46
+for(const [stemIndex, stem] of stems.entries()){
+47
+ 
+48
+/*
+49
+Ausgangsreihenfolge:
+50
+Position 0 = richtige Antwort
+51
+Position 1 bis 3 = falsche Antworten
+52
+*/
+53
+const sourceOptions = [
+54
+correct,
+55
+...wrong
+56
+];
+57
+ 
+58
+/*
+59
+Für jede Frage wird reproduzierbar dieselbe Reihenfolge gewählt.
+60
+*/
+61
+const orderIndex =
+62
+(conceptIndex * stems.length + stemIndex)
+63
+% ANSWER_ORDERS.length;
+64
+ 
+65
+const selectedOrder =
+66
+ANSWER_ORDERS[orderIndex];
+67
+ 
+68
+const options =
+69
+selectedOrder.map(
+70
+sourceIndex => sourceOptions[sourceIndex]
+71
+);
+72
+ 
+73
+BANK.push({
+74
+id: id++,
+75
+q: stem(term),
+76
+options: options,
+77
+answer: options.indexOf(correct),
+78
+explanation: explanation,
+79
+topic: topic
+80
+});
+81
+}
+82
+}
 
 let myId=localStorage.getItem("lf03PlayerId")||crypto.randomUUID();localStorage.setItem("lf03PlayerId",myId);let myName="",room=null,lastStatus="",scoring=false;
 const $=x=>document.getElementById(x),views=["joinView","lobbyView","gameView","finalView"];function show(id){views.forEach(v=>$(v).classList.toggle("hidden",v!==id))}function esc(s){return String(s??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]))}
