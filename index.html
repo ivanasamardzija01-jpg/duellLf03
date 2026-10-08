@@ -1,17 +1,150 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>LF03 Quiz</title>
+<title>LF03 Online Duell</title>
+ 
+<style>
+body{
+font-family:Arial, sans-serif;
+background:#1f2937;
+color:white;
+text-align:center;
+padding:40px;
+}
+ 
+.card{
+max-width:600px;
+margin:auto;
+background:#374151;
+padding:20px;
+border-radius:15px;
+}
+ 
+input{
+padding:10px;
+width:250px;
+margin:10px;
+}
+ 
+button{
+padding:10px 20px;
+cursor:pointer;
+}
+ 
+#players{
+margin-top:20px;
+}
+</style>
 </head>
-
+ 
 <body>
-
-<h1>Mein LF03 Quiz</h1>
-
-<button onclick="alert('Hallo Ivana')">
-Test
+ 
+<div class="card">
+ 
+<h1>🎮 LF03 Online Duell</h1>
+ 
+<p>Raumcode: <b>123456</b></p>
+ 
+<input id="playerName" placeholder="Dein Name">
+ 
+<br>
+ 
+<button onclick="joinRoom()">
+Beitreten
 </button>
-
+ 
+<div id="status"></div>
+ 
+<div id="players"></div>
+ 
+</div>
+ 
+<script type="module">
+ 
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+ 
+import {
+getDatabase,
+ref,
+set,
+onValue
+}
+from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+ 
+const firebaseConfig = {
+ 
+apiKey: "DEIN_API_KEY",
+authDomain: "lf03-duell.firebaseapp.com",
+databaseURL:
+"https://lf03-duell-default-rtdb.europe-west1.firebasedatabase.app",
+ 
+projectId: "lf03-duell",
+ 
+storageBucket:
+"lf03-duell.firebasestorage.app",
+ 
+messagingSenderId: "687106370304",
+ 
+appId:
+"1:687106370304:web:93824e72957d5371ede1e5"
+ 
+};
+ 
+const app = initializeApp(firebaseConfig);
+ 
+const db = getDatabase(app);
+ 
+window.joinRoom = function(){
+ 
+let name =
+document.getElementById("playerName").value;
+ 
+if(!name){
+alert("Bitte Namen eingeben");
+return;
+}
+ 
+set(
+ref(db,"123456/"+name),
+{
+joined:true
+}
+);
+ 
+document.getElementById("status")
+.innerHTML =
+"✅ Verbunden als "+name;
+ 
+}
+ 
+onValue(
+ref(db,"123456"),
+(snapshot)=>{
+ 
+let data = snapshot.val();
+ 
+let html =
+"<h3>Spieler:</h3>";
+ 
+if(data){
+ 
+for(let p in data){
+ 
+html += p+"<br>";
+ 
+}
+ 
+}
+ 
+document.getElementById("players")
+.innerHTML = html;
+ 
+}
+);
+ 
+</script>
+ 
 </body>
 </html>
